@@ -1,0 +1,1927 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hùng Phong Mobile - Hệ Thống Giao Nhận Máy Sửa Chữa</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .font-receipt {
+      font-family: 'Courier Prime', monospace;
+    }
+    /* Style cho bảng in ấn cổ điển */
+    .print-table {
+      border-left: 1px solid #7a7676;
+      border-top: 1px solid #7a7676;
+      width: 100%;
+    }
+    .print-table th, .print-table td {
+      border-right: 1px solid #7a7676;
+      border-bottom: 1px solid #7a7676;
+      padding: 6px 8px;
+    }
+    /* Tối ưu hóa in ấn khổ A5 dọc */
+    @media print {
+      @page {
+        size: A5 portrait;
+        margin: 5mm;
+      }
+      body * {
+        visibility: hidden;
+      }
+      #print-area, #print-area * {
+        visibility: visible;
+      }
+      #print-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        border: none !important;
+        box-shadow: none !important;
+        background: white !important;
+        color: black !important;
+        padding: 0 !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- HEADER -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16 items-center">
+        <!-- Hùng Phong Mobile -->
+        <div class="flex items-center space-x-3">
+          <div class="bg-blue-600 text-white p-2.5 rounded-xl shadow-lg shadow-blue-500/20">
+            <i data-lucide="smartphone" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h1 class="text-xl font-extrabold tracking-tight text-slate-900">HÙNG PHONG MOBILE</h1>
+            <p class="text-xs font-semibold text-blue-600 tracking-wide uppercase">Hệ thống Tiếp Nhận & Sửa Chữa</p>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav class="hidden md:flex space-x-1 bg-slate-100 p-1.5 rounded-xl">
+          <button onclick="switchTab('reception')" id="tab-reception" class="tab-btn px-4 py-2 text-sm font-semibold rounded-lg bg-white text-slate-900 shadow-sm flex items-center space-x-2 transition-all">
+            <i data-lucide="plus-circle" class="w-4 h-4 text-blue-600"></i>
+            <span>Tiếp Nhận Máy</span>
+          </button>
+          <button onclick="switchTab('orders')" id="tab-orders" class="tab-btn px-4 py-2 text-sm font-medium rounded-lg text-slate-600 hover:text-slate-900 flex items-center space-x-2 transition-all">
+            <i data-lucide="list-todo" class="w-4 h-4"></i>
+            <span>Danh Sách Đơn</span>
+          </button>
+          <button onclick="switchTab('customers')" id="tab-customers" class="tab-btn px-4 py-2 text-sm font-medium rounded-lg text-slate-600 hover:text-slate-900 flex items-center space-x-2 transition-all">
+            <i data-lucide="users" class="w-4 h-4"></i>
+            <span>Khách Hàng</span>
+          </button>
+          <button onclick="switchTab('reports')" id="tab-reports" class="tab-btn px-4 py-2 text-sm font-medium rounded-lg text-slate-600 hover:text-slate-900 flex items-center space-x-2 transition-all">
+            <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+            <span>Báo Cáo</span>
+          </button>
+        </nav>
+
+        <!-- Live Clock & User Info -->
+        <div class="flex items-center space-x-4">
+          <div class="text-right hidden sm:block">
+            <div id="live-time" class="text-sm font-bold text-slate-700">00:00:00</div>
+            <div class="text-[10px] text-slate-400 font-medium">Nhân viên: HP68</div>
+          </div>
+          <span class="h-8 w-[1px] bg-slate-200 hidden sm:block"></span>
+          <button class="bg-slate-100 hover:bg-slate-200 text-slate-600 p-2 rounded-xl transition-colors">
+            <i data-lucide="bell" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MOBILE NAVIGATION BAR -->
+  <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-4 py-2 flex justify-around z-40 shadow-xl">
+    <button onclick="switchTab('reception')" class="flex flex-col items-center space-y-1 text-slate-600 active:text-blue-600 py-1">
+      <i data-lucide="plus-circle" class="w-5 h-5"></i>
+      <span class="text-[10px] font-semibold">Tiếp Nhận</span>
+    </button>
+    <button onclick="switchTab('orders')" class="flex flex-col items-center space-y-1 text-slate-600 active:text-blue-600 py-1">
+      <i data-lucide="list-todo" class="w-5 h-5"></i>
+      <span class="text-[10px] font-semibold">Danh Sách</span>
+    </button>
+    <button onclick="switchTab('customers')" class="flex flex-col items-center space-y-1 text-slate-600 active:text-blue-600 py-1">
+      <i data-lucide="users" class="w-5 h-5"></i>
+      <span class="text-[10px] font-semibold">Khách</span>
+    </button>
+    <button onclick="switchTab('reports')" class="flex flex-col items-center space-y-1 text-slate-600 active:text-blue-600 py-1">
+      <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+      <span class="text-[10px] font-semibold">Báo Cáo</span>
+    </button>
+  </div>
+
+  <!-- MAIN APP CONTAINER -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 mb-16 md:mb-6">
+    
+    <!-- Toast Message Container -->
+    <div id="toast" class="hidden fixed bottom-20 right-4 md:top-20 md:bottom-auto bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-2 z-50 transition-all transform translate-y-2 opacity-0">
+      <i data-lucide="info" class="w-5 h-5 text-blue-400"></i>
+      <span id="toast-msg" class="text-sm font-medium">Thông báo thành công!</span>
+    </div>
+
+    <!-- TAB 1: QUẦY TIẾP NHẬN MÁY -->
+    <section id="pane-reception" class="tab-pane space-y-6">
+      
+      <!-- GRID LAYOUT -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- LEFT PANEL: CUSTOMER & DEVICE INFO -->
+        <div class="lg:col-span-7 space-y-6">
+          
+          <!-- Customer Info -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center space-x-2">
+                <div class="bg-blue-50 text-blue-600 p-1.5 rounded-lg">
+                  <i data-lucide="user" class="w-5 h-5"></i>
+                </div>
+                <h2 class="text-base font-bold text-slate-900">Thông tin khách hàng</h2>
+              </div>
+              <button onclick="openCustomerSearch()" class="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center space-x-1">
+                <i data-lucide="search" class="w-3.5 h-3.5"></i>
+                <span>Tìm khách cũ</span>
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Số điện thoại</label>
+                <input type="tel" id="cust-phone" oninput="updateLiveReceipt()" placeholder="Nhập SĐT..." class="w-full bg-slate-50 hover:bg-slate-100/50 focus:bg-white border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-sm font-medium outline-none transition-all">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Tên khách hàng</label>
+                <input type="text" id="cust-name" oninput="updateLiveReceipt()" placeholder="Tên khách..." class="w-full bg-slate-50 hover:bg-slate-100/50 focus:bg-white border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-sm font-medium outline-none transition-all">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Địa chỉ</label>
+                <input type="text" id="cust-address" oninput="updateLiveReceipt()" placeholder="Địa chỉ..." class="w-full bg-slate-50 hover:bg-slate-100/50 focus:bg-white border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-sm font-medium outline-none transition-all">
+              </div>
+            </div>
+          </div>
+
+          <!-- Device Info Section -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+            <div class="flex items-center space-x-2 mb-4">
+              <div class="bg-blue-50 text-blue-600 p-1.5 rounded-lg">
+                <i data-lucide="smartphone" class="w-5 h-5"></i>
+              </div>
+              <h2 class="text-base font-bold text-slate-900">Thông tin thiết bị nhận sửa</h2>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Tên máy / Model</label>
+                <input type="text" id="dev-model" oninput="updateLiveReceipt()" placeholder="Ví dụ: iPhone 12 Pro Max" class="w-full bg-slate-50 hover:bg-slate-100/50 focus:bg-white border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-sm font-medium outline-none transition-all">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Số IMEI / Serial</label>
+                <input type="text" id="dev-imei" oninput="updateLiveReceipt()" placeholder="IMEI hoặc Serial máy" class="w-full bg-slate-50 hover:bg-slate-100/50 focus:bg-white border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-sm font-medium outline-none transition-all">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Tình trạng máy / Mô tả lỗi</label>
+                <textarea id="dev-fault" oninput="updateLiveReceipt()" rows="3" placeholder="Ví dụ: Mất nguồn đột ngột, cắm sạc không báo gì, máy zin chưa bung..." class="w-full bg-slate-50 hover:bg-slate-100/50 focus:bg-white border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-sm font-medium outline-none transition-all resize-none"></textarea>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Phụ kiện đi kèm / Ghi chú</label>
+                <textarea id="dev-notes" oninput="updateLiveReceipt()" rows="3" placeholder="Ví dụ: Trần không phụ kiện, kính sau nứt nhẹ..." class="w-full bg-slate-50 hover:bg-slate-100/50 focus:bg-white border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-sm font-medium outline-none transition-all resize-none"></textarea>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Mật khẩu khóa máy (nếu có)</label>
+                <input type="text" id="dev-passcode" oninput="updateLiveReceipt()" placeholder="Mật khẩu màn hình..." class="w-full bg-slate-50 hover:bg-slate-100/50 focus:bg-white border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-sm font-medium outline-none transition-all">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Ngày hẹn trả máy</label>
+                <input type="datetime-local" id="dev-deadline" oninput="updateLiveReceipt()" class="w-full bg-slate-50 hover:bg-slate-100/50 focus:bg-white border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-sm font-medium outline-none transition-all">
+              </div>
+            </div>
+          </div>
+
+          <!-- Services Section -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center space-x-2">
+                <div class="bg-blue-50 text-blue-600 p-1.5 rounded-lg">
+                  <i data-lucide="wrench" class="w-5 h-5"></i>
+                </div>
+                <h2 class="text-base font-bold text-slate-900">Chi tiết dịch vụ sửa chữa</h2>
+              </div>
+              <div class="flex space-x-2">
+                <button onclick="addHoldService()" class="text-xs font-bold text-amber-700 hover:text-amber-800 flex items-center space-x-1 bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-lg transition-colors border border-amber-200">
+                  <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+                  <span>Nhận kiểm tra & Báo sau</span>
+                </button>
+                <button onclick="triggerF9()" class="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center space-x-1 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors">
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                  <span>Thêm nhanh dịch vụ (F9)</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-slate-100">
+                <thead>
+                  <tr class="text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
+                    <th class="py-3">Tên dịch vụ / Linh kiện</th>
+                    <th class="py-3 text-right">Chi phí (đ)</th>
+                    <th class="py-3 text-right">Bảo hành</th>
+                    <th class="py-3 text-center">Xóa</th>
+                  </tr>
+                </thead>
+                <tbody id="selected-services-list" class="divide-y divide-slate-100 text-sm">
+                  <tr id="empty-service-row">
+                    <td colspan="4" class="py-8 text-center text-slate-400 font-medium">Chưa chọn dịch vụ nào. Hãy chọn "Nhận kiểm tra & Báo sau" hoặc "Thêm nhanh dịch vụ (F9)"</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT PANEL: CUSTOMER-TEMPLATE LIVE PREVIEW -->
+        <div class="lg:col-span-5 space-y-6">
+          <div class="bg-white rounded-2xl border border-slate-200 p-1 shadow-md sticky top-24">
+            <!-- Mock Document Frame -->
+            <div class="bg-white p-5 rounded-xl border border-slate-200 overflow-hidden text-slate-900" style="font-size: 0.85rem">
+              
+              <!-- Company Header Table -->
+              <div class="flex items-start justify-between border-b border-gray-300 pb-4 mb-4">
+                <div class="w-1/4 flex flex-col items-center justify-center text-center">
+                  <div class="bg-blue-600 text-white p-3 rounded-full mb-1">
+                    <i data-lucide="shield-check" class="w-8 h-8"></i>
+                  </div>
+                  <span class="text-[10px] font-bold text-blue-800 tracking-wider">HP Genuine</span>
+                </div>
+                <div class="w-3/4 text-right">
+                  <span class="text-xs font-bold text-slate-700 tracking-wide uppercase block">LINH KIỆN - PHỤ KIỆN</span>
+                  <h2 class="text-2xl font-black text-blue-600 font-receipt">HÙNG PHONG <span class="text-lg text-slate-800">MOBILE</span></h2>
+                  <div class="text-[11px] text-slate-600 space-y-0.5 mt-1 font-semibold">
+                    <p>* Địa Chỉ: 77-79 Lạc Hồng, P. Rạch Giá, Tỉnh An Giang</p>
+                    <p>* Hỗ Trợ Kĩ Thuật: 0907.226.236 - 0766.168.268</p>
+                    <p>* Chuyên: Cung cấp linh kiện, phụ kiện sửa chữa, ép kính...</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Title -->
+              <div class="text-center py-2">
+                <h3 class="text-xl font-black text-slate-900 tracking-wide uppercase">BIÊN NHẬN SỬA CHỮA</h3>
+              </div>
+
+              <!-- Meta Data -->
+              <div class="grid grid-cols-2 gap-4 my-3 text-xs border-b border-gray-200 pb-3">
+                <div class="space-y-1">
+                  <p class="font-bold text-slate-800">KHÁCH HÀNG: <span id="rec-cust" class="text-blue-600 font-extrabold uppercase">Chưa có tên</span></p>
+                  <p class="font-bold text-slate-700">ĐIỆN THOẠI: <span id="rec-phone">Chưa có SĐT</span></p>
+                  <p class="text-slate-500 font-medium">Địa chỉ: <span id="rec-address" class="font-bold text-slate-700">--</span></p>
+                </div>
+                <div class="space-y-1 text-right">
+                  <p class="font-semibold text-slate-600">Mã biên nhận: <span id="rec-id" class="font-bold text-slate-900">HP-TEMPORARY</span></p>
+                  <p class="text-slate-500">Ngày lập: <span id="rec-created" class="font-bold text-slate-800">--/--/----</span></p>
+                </div>
+              </div>
+
+              <!-- Main Services Grid -->
+              <div class="overflow-x-auto my-3">
+                <table class="w-full text-xs print-table">
+                  <thead>
+                    <tr class="bg-slate-50 text-slate-800">
+                      <th class="w-[8%] text-center font-bold">STT</th>
+                      <th class="w-[52%] text-center font-bold">TÊN SẢN PHẨM / DỊCH VỤ</th>
+                      <th class="w-[10%] text-center font-bold">SL</th>
+                      <th class="w-[15%] text-right font-bold">Đơn giá</th>
+                      <th class="w-[15%] text-right font-bold">Thành tiền</th>
+                    </tr>
+                  </thead>
+                  <tbody id="rec-services" class="divide-y divide-slate-200">
+                    <!-- Dynamic -->
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Payment Totals -->
+              <div class="flex justify-end items-center space-x-2 my-4 text-xs font-bold border-t border-gray-100 pt-3">
+                <span class="text-slate-600">Khách hàng thanh toán:</span>
+                <span id="rec-total" class="text-base text-blue-600 font-black">0 đ</span>
+              </div>
+
+              <!-- Notes Area -->
+              <div class="my-3 text-xs">
+                <span class="font-bold text-slate-800 underline block mb-1">GHI CHÚ:</span>
+                <p id="rec-ghi-chu" class="text-slate-600 italic leading-relaxed whitespace-pre-line bg-slate-50 p-2.5 rounded-xl border border-dashed border-slate-200 min-h-[50px]">Vui lòng nhập thông tin lỗi, mật khẩu máy & phụ kiện kèm theo...</p>
+              </div>
+
+              <!-- VietQR Integration inside live preview -->
+              <div id="rec-qrcode-box" class="py-3 my-3 bg-blue-50/50 rounded-2xl border border-blue-100/60 text-center flex flex-col items-center justify-center hidden">
+                <p class="text-[10px] font-bold text-blue-700 mb-1.5 flex items-center">
+                  <i data-lucide="qr-code" class="w-3.5 h-3.5 mr-1 text-blue-600 animate-pulse"></i>
+                  Quét mã VietQR Chuyển Khoản Nhanh
+                </p>
+                <div class="p-1.5 bg-white rounded-xl shadow-sm border border-slate-200">
+                  <img id="rec-qrcode-img" src="" alt="VietQR Pay" class="w-24 h-24 object-contain">
+                </div>
+              </div>
+
+              <!-- Rules & Footers from requested template -->
+              <div class="text-[11px] text-slate-500 space-y-1 pt-3 border-t border-dashed border-slate-200 leading-relaxed font-medium">
+                <p><strong class="text-slate-800 underline">Lưu ý:</strong> Khi đến nhận máy, vui lòng đem theo <strong>BIÊN NHẬN</strong> này (chỉ trả máy khi có giấy biên nhận).</p>
+                <p>- Quý khách vui lòng <strong>giữ lại</strong> vật dụng cá nhân như <em><strong>sim, thẻ nhớ, ghi chú, giấy tờ dán sau máy, ốp lưng...</strong></em></p>
+                <p>- HP68 <strong>không chịu trách nhiệm</strong> với các <strong>vật dụng cá nhân sót lại</strong> của máy.</p>
+                <p class="font-bold text-slate-700">*** Trường hợp mất giấy biên nhận phải có CCCD hoặc giấy CMND ***</p>
+                <p class="text-center font-bold text-slate-700 italic mt-3 block">Hùng Phong cảm ơn Quý Khách Hàng đã tin tưởng và ủng hộ!</p>
+                <p class="text-center font-bold text-blue-600 mt-2 block">*** Góp ý, phản ánh liên hệ : 0947.666.368 - 0919.844.833</p>
+              </div>
+
+            </div>
+
+            <!-- Invoice Control Actions -->
+            <div class="p-4 bg-slate-50 rounded-b-2xl border-t border-slate-200 space-y-3">
+              <div class="mb-2">
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Phương thức giao dịch</label>
+                <div class="grid grid-cols-2 gap-2">
+                  <button onclick="setPaymentMethod('cash')" id="pay-cash" class="py-2 px-3 text-xs font-semibold rounded-xl border border-blue-600 bg-blue-50/50 text-blue-800 flex items-center justify-center space-x-1.5 transition-all">
+                    <i data-lucide="banknote" class="w-3.5 h-3.5"></i>
+                    <span>Tiền mặt</span>
+                  </button>
+                  <button onclick="setPaymentMethod('transfer')" id="pay-transfer" class="py-2 px-3 text-xs font-semibold rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 flex items-center justify-center space-x-1.5 transition-all">
+                    <i data-lucide="qr-code" class="w-3.5 h-3.5"></i>
+                    <span>Chuyển khoản</span>
+                  </button>
+                </div>
+              </div>
+
+              <button onclick="saveAndPrintOrder()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-blue-500/20 flex items-center justify-center space-x-2 transition-all">
+                <i data-lucide="printer" class="w-5 h-5"></i>
+                <span>Lưu & In Hóa Đơn (Ctrl + P)</span>
+              </button>
+              <button onclick="clearForm()" class="w-full bg-white hover:bg-slate-50 text-slate-500 border border-slate-200 font-semibold py-2 px-4 rounded-xl flex items-center justify-center space-x-2 transition-all text-xs">
+                <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                <span>Hủy và làm mới lại (F11)</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- IMAGE-INSPIRED ACTION GRID -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Các thao tác hỗ trợ nhanh</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <button onclick="triggerF9()" class="bg-[#f0f5fc] hover:bg-[#e2edf9] border border-blue-100 text-blue-800 font-semibold py-3 px-2 rounded-xl text-xs md:text-sm shadow-sm transition-all text-center flex flex-col justify-center items-center space-y-1">
+            <i data-lucide="wrench" class="w-5 h-5 mb-1 text-blue-600"></i>
+            <span>Thêm dịch vụ (F9)</span>
+          </button>
+          
+          <button onclick="triggerF6()" class="bg-[#f0f5fc] hover:bg-[#e2edf9] border border-blue-100 text-blue-800 font-semibold py-3 px-2 rounded-xl text-xs md:text-sm shadow-sm transition-all text-center flex flex-col justify-center items-center space-y-1">
+            <i data-lucide="percent" class="w-5 h-5 mb-1 text-blue-600"></i>
+            <span>Chiết khấu đơn (F6)</span>
+          </button>
+          
+          <button onclick="triggerF8()" class="bg-[#f0f5fc] hover:bg-[#e2edf9] border border-blue-100 text-blue-800 font-semibold py-3 px-2 rounded-xl text-xs md:text-sm shadow-sm transition-all text-center flex flex-col justify-center items-center space-y-1">
+            <i data-lucide="gift" class="w-5 h-5 mb-1 text-blue-600"></i>
+            <span>Khuyến mại (F8)</span>
+          </button>
+          
+          <button onclick="showGiftModal()" class="bg-[#f0f5fc] hover:bg-[#e2edf9] border border-blue-100 text-blue-800 font-semibold py-3 px-2 rounded-xl text-xs md:text-sm shadow-sm transition-all text-center flex flex-col justify-center items-center space-y-1">
+            <i data-lucide="award" class="w-5 h-5 mb-1 text-blue-600"></i>
+            <span>Đổi quà tặng</span>
+          </button>
+          
+          <button onclick="showSettings()" class="bg-[#f0f5fc] hover:bg-[#e2edf9] border border-blue-100 text-blue-800 font-semibold py-3 px-2 rounded-xl text-xs md:text-sm shadow-sm transition-all text-center flex flex-col justify-center items-center space-y-1">
+            <i data-lucide="sliders" class="w-5 h-5 mb-1 text-blue-600"></i>
+            <span>Thiết lập chung</span>
+          </button>
+          
+          <button onclick="showChangePrice()" class="bg-[#f0f5fc] hover:bg-[#e2edf9] border border-blue-100 text-blue-800 font-semibold py-3 px-2 rounded-xl text-xs md:text-sm shadow-sm transition-all text-center flex flex-col justify-center items-center space-y-1">
+            <i data-lucide="trending-up" class="w-5 h-5 mb-1 text-blue-600"></i>
+            <span>Đổi giá bán hàng</span>
+          </button>
+          
+          <button onclick="focusCustomerName()" class="bg-[#f0f5fc] hover:bg-[#e2edf9] border border-blue-100 text-blue-800 font-semibold py-3 px-2 rounded-xl text-xs md:text-sm shadow-sm transition-all text-center flex flex-col justify-center items-center space-y-1">
+            <i data-lucide="user-plus" class="w-5 h-5 mb-1 text-blue-600"></i>
+            <span>Thông tin khách</span>
+          </button>
+          
+          <button onclick="clearForm()" class="bg-[#f0f5fc] hover:bg-[#e2edf9] border border-blue-100 text-blue-800 font-semibold py-3 px-2 rounded-xl text-xs md:text-sm shadow-sm transition-all text-center flex flex-col justify-center items-center space-y-1">
+            <i data-lucide="trash-2" class="w-5 h-5 mb-1 text-blue-600"></i>
+            <span>Xóa toàn bộ SP</span>
+          </button>
+          
+          <button onclick="switchTab('orders')" class="bg-[#f0f5fc] hover:bg-[#e2edf9] border border-blue-100 text-blue-800 font-semibold py-3 px-2 rounded-xl text-xs md:text-sm shadow-sm transition-all text-center flex flex-col justify-center items-center space-y-1">
+            <i data-lucide="undo-2" class="w-5 h-5 mb-1 text-blue-600"></i>
+            <span>Đổi trả sửa chữa</span>
+          </button>
+          
+          <button onclick="switchTab('orders')" class="bg-[#f0f5fc] hover:bg-[#e2edf9] border border-blue-100 text-blue-800 font-semibold py-3 px-2 rounded-xl text-xs md:text-sm shadow-sm transition-all text-center flex flex-col justify-center items-center space-y-1">
+            <i data-lucide="clipboard-list" class="w-5 h-5 mb-1 text-blue-600"></i>
+            <span>Xem danh sách đơn</span>
+          </button>
+          
+          <button onclick="switchTab('reports')" class="bg-[#f0f5fc] hover:bg-[#e2edf9] border border-blue-100 text-blue-800 font-semibold py-3 px-2 rounded-xl text-xs md:text-sm shadow-sm transition-all text-center flex flex-col justify-center items-center space-y-1">
+            <i data-lucide="pie-chart" class="w-5 h-5 mb-1 text-blue-600"></i>
+            <span>Xem báo cáo</span>
+          </button>
+          
+          <button onclick="showAllActions()" class="bg-[#f0f5fc] hover:bg-[#e2edf9] border border-blue-100 text-blue-800 font-semibold py-3 px-2 rounded-xl text-xs md:text-sm shadow-sm transition-all text-center flex flex-col justify-center items-center space-y-1">
+            <i data-lucide="layers" class="w-5 h-5 mb-1 text-blue-600"></i>
+            <span>Tất cả thao tác</span>
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- TAB 2: DANH SÁCH ĐƠN HÀNG SỬA CHỮA -->
+    <section id="pane-orders" class="tab-pane hidden space-y-6">
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+        
+        <!-- Search & Filter Controls -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div class="relative flex-1">
+            <i data-lucide="search" class="w-5 h-5 text-slate-400 absolute left-4 top-1/2 transform -translate-y-1/2"></i>
+            <input type="text" id="order-search-input" onkeyup="filterOrdersTable()" placeholder="Tìm kiếm đơn bằng: Tên khách hàng, Số điện thoại, Model máy, Mã đơn..." class="w-full bg-slate-50 hover:bg-slate-100/50 focus:bg-white border border-slate-200 focus:border-blue-500 rounded-xl pl-12 pr-4 py-2.5 text-sm font-medium outline-none transition-all">
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="filterStatus('all')" id="btn-filter-all" class="filter-btn px-4 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white shadow-md shadow-blue-500/15 transition-all">
+              Tất cả
+            </button>
+            <button onclick="filterStatus('Mới nhận')" id="btn-filter-received" class="filter-btn px-4 py-2 text-xs font-bold rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">
+              Mới nhận
+            </button>
+            <button onclick="filterStatus('Đang kiểm tra / Chờ báo giá')" id="btn-filter-pending-quote" class="filter-btn px-4 py-2 text-xs font-bold rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">
+              Chờ báo giá
+            </button>
+            <button onclick="filterStatus('Đang sửa')" id="btn-filter-fixing" class="filter-btn px-4 py-2 text-xs font-bold rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">
+              Đang sửa
+            </button>
+            <button onclick="filterStatus('Đã sửa xong')" id="btn-filter-done" class="filter-btn px-4 py-2 text-xs font-bold rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">
+              Đã xong
+            </button>
+            <button onclick="filterStatus('Đã giao')" id="btn-filter-delivered" class="filter-btn px-4 py-2 text-xs font-bold rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">
+              Đã giao máy
+            </button>
+          </div>
+        </div>
+
+        <!-- Orders Table -->
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-slate-100">
+            <thead>
+              <tr class="text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <th class="py-3 px-4">Mã đơn</th>
+                <th class="py-3 px-4">Khách hàng</th>
+                <th class="py-3 px-4">Thiết bị</th>
+                <th class="py-3 px-4">Ngày nhận</th>
+                <th class="py-3 px-4">Dịch vụ sửa chữa</th>
+                <th class="py-3 px-4 text-right">Tổng tiền</th>
+                <th class="py-3 px-4 text-center">Trạng thái</th>
+                <th class="py-3 px-4 text-center">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="orders-table-body" class="divide-y divide-slate-100 text-sm">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: KHÁCH HÀNG -->
+    <section id="pane-customers" class="tab-pane hidden space-y-6">
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-lg font-bold text-slate-900">Danh Sách Khách Hàng Thân Thiết</h2>
+          <div class="relative w-64">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 transform -translate-y-1/2"></i>
+            <input type="text" id="cust-search-input" onkeyup="filterCustomers()" placeholder="Tìm tên hoặc SĐT..." class="w-full bg-slate-50 hover:bg-slate-100/50 focus:bg-white border border-slate-200 focus:border-blue-500 rounded-xl pl-10 pr-4 py-2 text-xs font-medium outline-none transition-all">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="customers-list-grid">
+          <!-- Dynamically populated cards -->
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: BÁO CÁO THỐNG KÊ -->
+    <section id="pane-reports" class="tab-pane hidden space-y-6">
+      
+      <!-- Report Key Metrics Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex items-center justify-between">
+          <div>
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Doanh Thu Trong Tháng</span>
+            <span id="report-revenue" class="text-2xl font-extrabold text-slate-900 block mt-1">24,500,000đ</span>
+            <span class="text-xs font-semibold text-emerald-500 mt-1 flex items-center">
+              <i data-lucide="trending-up" class="w-3.5 h-3.5 mr-1"></i> +12% so với tháng trước
+            </span>
+          </div>
+          <div class="bg-emerald-50 text-emerald-600 p-3 rounded-2xl">
+            <i data-lucide="circle-dollar-sign" class="w-6 h-6"></i>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex items-center justify-between">
+          <div>
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Chờ Báo Giá / Đang Sửa</span>
+            <span id="report-fixing-count" class="text-2xl font-extrabold text-slate-900 block mt-1">8 Đơn</span>
+            <span class="text-xs font-semibold text-amber-500 mt-1 flex items-center">
+              <i data-lucide="clock" class="w-3.5 h-3.5 mr-1"></i> Cần báo giá gấp cho khách
+            </span>
+          </div>
+          <div class="bg-amber-50 text-amber-600 p-3 rounded-2xl">
+            <i data-lucide="hammer" class="w-6 h-6"></i>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex items-center justify-between">
+          <div>
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Chờ Giao Cho Khách</span>
+            <span id="report-done-count" class="text-2xl font-extrabold text-slate-900 block mt-1">12 Đơn</span>
+            <span class="text-xs font-semibold text-blue-500 mt-1 flex items-center">
+              <i data-lucide="bell-ring" class="w-3.5 h-3.5 mr-1"></i> Đã SMS nhắc khách nhận máy
+            </span>
+          </div>
+          <div class="bg-blue-50 text-blue-600 p-3 rounded-2xl">
+            <i data-lucide="check-circle-2" class="w-6 h-6"></i>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex items-center justify-between">
+          <div>
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Đã Hoàn Thành Trả Máy</span>
+            <span id="report-completed-count" class="text-2xl font-extrabold text-slate-900 block mt-1">142 Máy</span>
+            <span class="text-xs font-semibold text-emerald-500 mt-1 flex items-center">
+              <i data-lucide="smile" class="w-3.5 h-3.5 mr-1"></i> 98% Khách hàng hài lòng
+            </span>
+          </div>
+          <div class="bg-violet-50 text-violet-600 p-3 rounded-2xl">
+            <i data-lucide="package-check" class="w-6 h-6"></i>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- MODAL: THÊM DỊCH VỤ NHANH (F9) -->
+  <div id="service-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 transform scale-95 transition-all">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-extrabold text-slate-900 flex items-center space-x-2">
+          <i data-lucide="wrench" class="text-blue-600"></i>
+          <span>Danh Mục Sửa Chữa Nhanh (F9)</span>
+        </h3>
+        <button onclick="closeModal('service-modal')" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-50">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="relative mb-4">
+        <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 transform -translate-y-1/2"></i>
+        <input type="text" id="modal-service-search" onkeyup="filterModalServices()" placeholder="Tìm kiếm nhanh dịch vụ sửa chữa..." class="w-full bg-slate-50 border border-slate-200 focus:border-blue-500 rounded-xl pl-9 pr-4 py-2 text-sm font-medium outline-none transition-all">
+      </div>
+
+      <!-- Quick choices list -->
+      <div id="modal-services-container" class="max-h-64 overflow-y-auto divide-y divide-slate-100 mb-4 pr-1">
+        <!-- JS generates list items here -->
+      </div>
+
+      <!-- Custom Service Adder -->
+      <div class="border-t border-slate-100 pt-4">
+        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Thêm dịch vụ khác bên ngoài danh mục</h4>
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <input type="text" id="custom-service-name" placeholder="Tên lỗi/dịch vụ cụ thể..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium outline-none">
+          <input type="number" id="custom-service-price" placeholder="Giá tiền sửa (đ)..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium outline-none">
+        </div>
+        <button onclick="addCustomService()" class="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold py-2 px-4 rounded-xl text-xs flex items-center justify-center space-x-1.5 transition-colors">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          <span>Xác nhận thêm dịch vụ khác</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CHIẾT KHẤU ĐƠN (F6) -->
+  <div id="discount-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 transform scale-95 transition-all">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-base font-extrabold text-slate-900 flex items-center space-x-2">
+          <i data-lucide="percent" class="text-blue-600 w-5 h-5"></i>
+          <span>Chiết khấu đơn hàng (F6)</span>
+        </h3>
+        <button onclick="closeModal('discount-modal')" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-50">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Mức giảm theo %</label>
+          <input type="number" id="discount-percent" placeholder="Ví dụ: 5" min="0" max="100" class="w-full bg-slate-50 border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-sm font-semibold outline-none transition-all">
+        </div>
+        <div class="text-center text-xs text-slate-400 font-bold">HOẶC</div>
+        <div>
+          <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Số tiền mặt chiết khấu (đ)</label>
+          <input type="number" id="discount-cash" placeholder="Ví dụ: 50000" min="0" class="w-full bg-slate-50 border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-sm font-semibold outline-none transition-all">
+        </div>
+        <button onclick="applyDiscount()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition-all">
+          Áp dụng chiết khấu
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: KHUYẾN MẠI (F8) -->
+  <div id="promo-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 transform scale-95 transition-all">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-base font-extrabold text-slate-900 flex items-center space-x-2">
+          <i data-lucide="gift" class="text-blue-600 w-5 h-5"></i>
+          <span>Mã chương trình khuyến mại (F8)</span>
+        </h3>
+        <button onclick="closeModal('promo-modal')" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-50">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Nhập mã khuyến mại / Voucher</label>
+          <input type="text" id="promo-code-input" placeholder="Ví dụ: TRIAN10, CHAOHUNGPHONG..." class="w-full bg-slate-50 border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-sm font-semibold uppercase outline-none transition-all">
+        </div>
+        
+        <!-- Predefined Promo tags -->
+        <div class="space-y-2">
+          <div class="text-xs font-bold text-slate-400">KHUYẾN MẠI CÓ SẴN:</div>
+          <button onclick="selectQuickPromo('TRIAN10')" class="w-full flex items-center justify-between p-2.5 rounded-xl border border-emerald-100 bg-emerald-50 text-left hover:bg-emerald-100 transition-colors">
+            <div>
+              <span class="block text-xs font-extrabold text-emerald-800">TRIAN10 (Giảm 10%)</span>
+              <span class="block text-[10px] text-emerald-600">Áp dụng tri ân khách sửa máy lần 2</span>
+            </div>
+            <i data-lucide="check" class="w-4 h-4 text-emerald-600"></i>
+          </button>
+          <button onclick="selectQuickPromo('KHACHQUEN50K')" class="w-full flex items-center justify-between p-2.5 rounded-xl border border-blue-100 bg-blue-50 text-left hover:bg-blue-100 transition-colors">
+            <div>
+              <span class="block text-xs font-extrabold text-blue-800">KHACHQUEN50K (Giảm 50.000đ)</span>
+              <span class="block text-[10px] text-blue-600">Giảm cho hóa đơn thay pin, màn hình</span>
+            </div>
+            <i data-lucide="check" class="w-4 h-4 text-blue-600"></i>
+          </button>
+        </div>
+
+        <button onclick="applyPromo()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition-all">
+          Xác nhận áp dụng
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ĐỔI TRẠNG THÁI MÁY ĐƠN HÀNG -->
+  <div id="status-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 transform scale-95 transition-all">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-base font-extrabold text-slate-900 flex items-center space-x-2">
+          <i data-lucide="refresh-cw" class="text-blue-600 w-5 h-5"></i>
+          <span>Cập Nhật Trạng Thái Thiết Bị</span>
+        </h3>
+        <button onclick="closeModal('status-modal')" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-50">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <input type="hidden" id="status-target-order-id">
+      
+      <!-- Update Service Price dynamically for hold-quote tickets -->
+      <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 mb-4 hidden" id="status-price-update-box">
+        <label class="block text-xs font-bold text-amber-800 mb-1">Cập nhật chi phí sửa sau kiểm tra (đ):</label>
+        <input type="number" id="status-new-price" placeholder="Nhập số tiền báo giá cho khách..." class="w-full bg-white border border-amber-300 rounded-lg px-3 py-2 text-sm font-semibold outline-none">
+      </div>
+
+      <div class="space-y-2">
+        <button onclick="updateOrderStatus('Mới nhận')" class="w-full py-3 px-4 rounded-xl text-left border border-slate-200 hover:bg-slate-50 font-bold text-sm text-slate-700 flex items-center justify-between">
+          <span>Mới nhận thiết bị</span>
+          <span class="bg-slate-100 text-slate-700 text-[10px] py-1 px-2.5 rounded-full uppercase">Chờ xử lý</span>
+        </button>
+        <button onclick="updateOrderStatus('Đang kiểm tra / Chờ báo giá')" class="w-full py-3 px-4 rounded-xl text-left border border-orange-200 hover:bg-orange-50 text-orange-800 font-bold text-sm flex items-center justify-between">
+          <span>Đang kiểm tra / Chờ báo giá</span>
+          <span class="bg-orange-100 text-orange-800 text-[10px] py-1 px-2.5 rounded-full uppercase">Đo đạc pan</span>
+        </button>
+        <button onclick="updateOrderStatus('Đang sửa')" class="w-full py-3 px-4 rounded-xl text-left border border-amber-200 hover:bg-amber-50 text-amber-800 font-bold text-sm flex items-center justify-between">
+          <span>Kỹ thuật đang sửa chữa</span>
+          <span class="bg-amber-100 text-amber-800 text-[10px] py-1 px-2.5 rounded-full uppercase">Đang làm</span>
+        </button>
+        <button onclick="updateOrderStatus('Đã sửa xong')" class="w-full py-3 px-4 rounded-xl text-left border border-green-200 hover:bg-green-50 text-green-800 font-bold text-sm flex items-center justify-between">
+          <span>Đã sửa xong - chờ khách</span>
+          <span class="bg-green-100 text-green-800 text-[10px] py-1 px-2.5 rounded-full uppercase">Sẵn sàng</span>
+        </button>
+        <button onclick="updateOrderStatus('Đã giao')" class="w-full py-3 px-4 rounded-xl text-left border border-blue-200 hover:bg-blue-50 text-blue-800 font-bold text-sm flex items-center justify-between">
+          <span>Đã trả máy & thanh toán</span>
+          <span class="bg-blue-100 text-blue-800 text-[10px] py-1 px-2.5 rounded-full uppercase">Giao xong</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SYSTEM ALERT MODAL -->
+  <div id="alert-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 transform scale-95 transition-all text-center">
+      <div id="alert-icon-container" class="mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-4">
+        <i data-lucide="info" class="w-6 h-6"></i>
+      </div>
+      <h3 id="alert-title" class="text-base font-extrabold text-slate-900 mb-2">Thông báo từ hệ thống</h3>
+      <p id="alert-message" class="text-sm text-slate-500 font-medium mb-6">Nội dung thông báo ở đây...</p>
+      <button onclick="closeModal('alert-modal')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition-all shadow-md shadow-blue-500/10">
+        Đã hiểu
+      </button>
+    </div>
+  </div>
+
+  <!-- PRINT VIEW (Biên nhận sửa chữa khổ A5 chuẩn) -->
+  <div id="print-area" class="p-8 max-w-3xl mx-auto bg-white border border-slate-300 rounded-2xl hidden text-slate-900 font-receipt" style="font-size: 0.85em;">
+    <!-- Shop Header Info -->
+    <table cellpadding="0" cellspacing="0" style="border-bottom: 1px solid #ddd; width:100%; margin-top:3%">
+      <tbody>
+        <tr>
+          <!-- Store Logo -->
+          <td style="text-align: center; width: 20%; padding-bottom: 10px;">
+            <div style="border: 2px solid #3b82f6; border-radius: 50%; width: 75px; height: 75px; display: flex; align-items: center; justify-content: center; margin: 0 auto; background-color: #eff6ff;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-check"><path d="M20 13c0 5-3.5 7.5-7.66 9.7a1 1 0 0 1-.68 0C7.5 20.5 4 18 4 13V6a1 1 0 0 1 .76-.97l8-2a1 1 0 0 1 .48 0l8 2c.57.14.76.64.76.97z"/><path d="m9 12 2 2 4-4"/></svg>
+            </div>
+            <span style="font-size: 10px; font-weight: bold; color: #2563eb; display: block; margin-top: 5px; tracking: 0.1em; text-transform: uppercase;">HP Genuine</span>
+          </td>
+          <!-- Store Details -->
+          <td style="text-align: center; padding-left: 20px;">
+            <p style="text-align: left;"><span style="font-size: 13.2px;"><b>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;LINH KIỆN - PHỤ KIỆN</b></span></p>
+            <p style="margin: 3px 0;"><span style="font-family:Verdana,Geneva,sans-serif;"><span style="font-size:36px;color:#2563eb;"><b>HÙNG PHONG&nbsp;</b></span><b><span style="font-size:22px;">MOBILE</span></b></span></p>
+            <p style="margin: 2px 0;"><strong><span style="font-size:14px;">* Địa Chỉ: 77-79 Lạc Hồng, P. Rạch Giá, Tỉnh An Giang</span></strong></p>
+            <p style="margin: 2px 0;"><strong><span style="font-size:14px;">* Hỗ Trợ Kĩ Thuật: 0907.226.236 -&nbsp;0766.168.268</span></strong></p>
+            <p style="margin: 2px 0;"><strong><span style="font-size:14px;">* Chuyên: Cung cấp linh kiện, phụ kiện sửa chữa, ép kính các dòng điện thoại di động</span></strong></p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Main Receipt Title -->
+    <table cellpadding="0" cellspacing="0" style="width:100%; margin-top: 15px;">
+      <tbody>
+        <tr>
+          <td style="padding: 1%; font-weight: bold; text-align: center;"><strong><span style="font-size:28px; letter-spacing: 1px;">BIÊN NHẬN SỬA CHỮA</span></strong></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Customer Meta -->
+    <table cellpadding="0" cellspacing="0" style="width:100%; margin-top: 10px;">
+      <tbody>
+        <tr>
+          <td style="width: 55%; vertical-align: top;">
+            <p style="margin: 4px 0;"><span style="font-size:14px;"><b>KHÁCH HÀNG:&nbsp;</b><strong id="p-cust-name" style="text-transform: uppercase; color: #2563eb;">Nguyễn Văn A</strong></span></p>
+            <p style="margin: 4px 0;"><strong><span style="font-size:12px;">ĐIỆN THOẠI: <span id="p-p-cust-phone">0912345678</span></span></strong></p>
+            <p style="margin: 4px 0;"><span style="font-size:12px; color: #555;">Địa chỉ: <span id="p-cust-address" style="font-weight: bold;">Rạch Giá</span></span></p>
+          </td>
+          <td style="width: 5%;">&nbsp;</td>
+          <td style="width: 40%; vertical-align: top; text-align: right;">
+            <p style="margin: 4px 0;"><span style="font-size:12px;"><strong>Mã biên nhận:</strong> <span id="p-order-id" style="font-weight: bold; color: #2563eb;">HP-10023</span></span></p>
+            <p style="margin: 4px 0;"><span style="font-size:12px;"><strong>Ngày lập biên nhận:</strong> <span id="p-created-on">25/05/2026 08:30</span></span></p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Divider Line -->
+    <hr style="border: none; border-top: 1px solid #7a7676; margin: 15px 0;" />
+
+    <!-- Services & Items Table -->
+    <table cellpadding="0" cellspacing="0" class="print-table" style="font-size: 0.9em; border-collapse: collapse;">
+      <thead>
+        <tr style="background-color: #f3f4f6;">
+          <th style="width: 6%; text-align: center;"><strong>STT</strong></th>
+          <th style="width: 54%; text-align: center;"><strong>TÊN SẢN PHẨM / DỊCH VỤ SỬA CHỮA</strong></th>
+          <th style="width: 10%; text-align: center;"><strong>SL</strong></th>
+          <th style="width: 15%; text-align: right;"><strong>Đơn giá</strong></th>
+          <th style="width: 15%; text-align: right;"><strong>Thành tiền</strong></th>
+        </tr>
+      </thead>
+      <tbody id="p-services-list">
+        <!-- Dynamically built inside JS -->
+      </tbody>
+    </table>
+
+    <!-- Total Payment Table -->
+    <table border="0" cellpadding="1" cellspacing="1" style="width: 100%; margin-top: 15px; border-top: 1px solid #7a7676; padding-top: 10px;">
+      <tbody>
+        <tr>
+          <td id="p-total-label" style="text-align: right; padding-right: 15px; font-weight: bold; font-size: 13px;">Khách hàng thanh toán:</td>
+          <td id="p-total-container" style="width: 180px; text-align: right; font-size: 16px; font-weight: 900; color: #2563eb;"><span id="p-total">1,200,000</span> đ</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Custom QR Code VietQR on printed receipt (shown only if Transfer & price determined) -->
+    <div id="p-qr-box" style="text-align: center; margin: 20px 0; display: none;">
+      <p style="font-size: 10px; color: #555; margin-bottom: 5px;">Mã QR chuyển khoản ngân hàng (Quét để điền số tiền & cú pháp)</p>
+      <div style="display: inline-block; padding: 8px; border: 1px solid #ccc; border-radius: 12px; background: white;">
+        <img id="p-qr-img" src="" alt="VietQR Pay" style="width: 110px; height: 110px; object-contain: cover;" />
+      </div>
+      <p style="font-size: 9px; color: #777; margin-top: 3px;">Ngân hàng MBBank - Hùng Phong Mobile</p>
+    </div>
+
+    <!-- Hand-written line Note Placeholder -->
+    <div style="margin-top: 15px; margin-bottom: 15px;">
+      <p><u><strong>GHI CHÚ:</strong></u> <span id="p-ghi-chu-text" style="font-size:13px; font-weight: bold; color: #374151;">................................................................................................................................................................................</span></p>
+    </div>
+
+    <!-- Legal Notes Footer -->
+    <footer style="page-break-after: always; margin-top: 25px; border-t: 1px dashed #bbb; padding-top: 15px;">
+      <p style="margin: 4px 0;"><span style="font-size:13px;"><u><strong>Lưu ý:</strong></u> Khi đến nhận máy, vui lòng đem theo <strong>BIÊN NHẬN </strong>này (chỉ trả máy khi có giấy biên nhận).<br />
+      &nbsp; - Quý khách vui lòng <strong>giữ lại </strong>vật dụng cá nhân như&nbsp;<em><strong>sim, thẻ nhớ, ghi chú, giấy tờ dán sau máy, ốp lưng...</strong></em></span></p>
+
+      <p style="margin: 4px 0;"><span style="font-size:13px;">&nbsp; - HP68 <strong>không chịu trách nhiệm</strong> với các <strong>vật dụng cá nhân sót lại</strong> của máy</span></p>
+
+      <p style="margin: 4px 0;"><span style="font-size:13px;">&nbsp; &nbsp; &nbsp; *** Trường hợp mất giấy biên nhận phải có <em><strong>CCCD hoặc giấy CMND</strong></em>***</span></p>
+
+      <p style="text-align: center; margin: 15px 0 5px 0;"><span style="font-size:14px;"><em>Hùng Phong cảm ơn Quý Khách Hàng đã tin tưởng và ủng hộ!</em></span></p>
+      
+      <!-- Signature lines matching receipt layout -->
+      <table style="width: 100%; text-align: center; font-size: 12px; margin-top: 20px; margin-bottom: 25px;">
+        <tr>
+          <td style="width: 50%;">
+            <strong>Khách Hàng Ký Tên</strong><br>
+            <span style="font-size: 10px; color: #888;">(Ký và ghi rõ họ tên)</span>
+            <div style="height: 60px;"></div>
+          </td>
+          <td style="width: 50%;">
+            <strong>Đại Diện Cửa Hàng</strong><br>
+            <span style="font-size: 10px; color: #888;">(Nhân viên nhận máy)</span>
+            <div style="height: 60px;"></div>
+          </td>
+        </tr>
+      </table>
+
+      <p style="margin: 10px 0 0 0; font-weight: bold; text-align: center; color: #2563eb;"><span style="font-size:16px;">*** Góp ý, phản ánh liên hệ : 0947.666.368 - 0919.844.833</span></p>
+    </footer>
+  </div>
+
+  <!-- APPLICATION SCRIPT -->
+  <script>
+    // Mock Database
+    let SERVICES_DATABASE = [
+      { id: 1, name: "Ép kính màn hình cảm ứng", price: 350000, warranty: "6 Tháng" },
+      { id: 2, name: "Thay màn hình OLED Zin Hãng", price: 1850000, warranty: "12 Tháng" },
+      { id: 3, name: "Thay Pin dung lượng cao", price: 450000, warranty: "12 Tháng" },
+      { id: 4, name: "Sửa nguồn / Sửa IC nguồn", price: 650000, warranty: "3 Tháng" },
+      { id: 5, name: "Thay nắp kính lưng", price: 250000, warranty: "Trọn đời lỗi keo" },
+      { id: 6, name: "Vệ sinh máy chuyên sâu", price: 100000, warranty: "Không" },
+      { id: 7, name: "Sửa camera / Thay ống kính", price: 550000, warranty: "6 Tháng" },
+      { id: 8, name: "Thay cáp chân sạc / Mic", price: 300000, warranty: "3 Tháng" }
+    ];
+
+    let ORDERS = [
+      {
+        id: "HP-10023",
+        customer: { name: "Trần Anh Khoa", phone: "0909555123", address: "77 Lạc Hồng, Rạch Giá" },
+        device: { model: "iPhone 13 Pro Max", imei: "358941257412", fault: "Bể kính màn hình ngoài, liệt cảm ứng góc dưới", passcode: "999999", notes: "Kèm ốp lưng Spigen", deadline: "2026-05-26T14:00" },
+        services: [
+          { name: "Ép kính màn hình cảm ứng", price: 350000, warranty: "6 Tháng" },
+          { name: "Vệ sinh máy chuyên sâu", price: 100000, warranty: "Không" }
+        ],
+        subtotal: 450000,
+        discount: 50000,
+        promo: 0,
+        total: 400000,
+        paymentMethod: "cash",
+        status: "Đang sửa",
+        createdAt: "2026-05-24T09:30"
+      },
+      {
+        id: "HP-10024",
+        customer: { name: "Nguyễn Thị Mai", phone: "0918742339", address: "Vĩnh Bảo, Rạch Giá" },
+        device: { model: "Samsung Galaxy S22 Ultra", imei: "987451235478", fault: "Hao nguồn nóng máy, thay pin", passcode: "Vẽ chữ L", notes: "Trần, không ốp", deadline: "2026-05-25T17:30" },
+        services: [
+          { name: "Thay Pin dung lượng cao", price: 450000, warranty: "12 Tháng" },
+          { name: "Sửa nguồn / Sửa IC nguồn", price: 650000, warranty: "3 Tháng" }
+        ],
+        subtotal: 1100000,
+        discount: 0,
+        promo: 110000,
+        total: 990000,
+        paymentMethod: "transfer",
+        status: "Mới nhận",
+        createdAt: "2026-05-25T08:00"
+      },
+      {
+        id: "HP-10025",
+        customer: { name: "Lê Văn Tám", phone: "0945888999", address: "Lạc Hồng, Rạch Giá" },
+        device: { model: "iPhone 12 Pro Max", imei: "359981245781", fault: "Máy sập mất nguồn hoàn toàn, sạc không báo gì", passcode: "140292", notes: "Máy trần, nứt kính lưng nhẹ", deadline: "2026-05-27T17:00" },
+        services: [
+          { name: "Nhận máy kiểm tra & Báo giá sau", price: -1, warranty: "Chờ báo giá" }
+        ],
+        subtotal: 0,
+        discount: 0,
+        promo: 0,
+        total: -1,
+        paymentMethod: "cash",
+        status: "Đang kiểm tra / Chờ báo giá",
+        createdAt: "2026-05-25T08:15"
+      }
+    ];
+
+    // Bill checkout / state values
+    let currentTicketServices = [];
+    let discountPercent = 0;
+    let discountCash = 0;
+    let promoAmount = 0;
+    let selectedPromoCode = "";
+    let selectedPaymentMethod = "cash";
+
+    // Application Start
+    window.onload = function() {
+      lucide.createIcons();
+
+      // Realtime Clock
+      setInterval(() => {
+        const d = new Date();
+        document.getElementById('live-time').innerText = d.toLocaleTimeString('vi-VN');
+      }, 1000);
+
+      // Render items
+      renderModalServices();
+      renderOrdersList();
+      renderCustomersList();
+      calculateTotals();
+      updateLiveReceipt();
+
+      // Listen shortcuts
+      window.addEventListener('keydown', handleGlobalKeydowns);
+    };
+
+    function handleGlobalKeydowns(e) {
+      if (e.key === "F9") {
+        e.preventDefault();
+        triggerF9();
+      } else if (e.key === "F6") {
+        e.preventDefault();
+        triggerF6();
+      } else if (e.key === "F8") {
+        e.preventDefault();
+        triggerF8();
+      } else if (e.key === "F11") {
+        e.preventDefault();
+        clearForm();
+      } else if ((e.ctrlKey || e.metaKey) && e.key === "p") {
+        e.preventDefault();
+        saveAndPrintOrder();
+      }
+    }
+
+    // Tab switching
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
+      document.getElementById('pane-' + tabId).classList.remove('hidden');
+
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.remove('bg-white', 'text-slate-900', 'shadow-sm');
+        b.classList.add('text-slate-600', 'hover:text-slate-900');
+      });
+
+      const activeBtn = document.getElementById('tab-' + tabId);
+      if (activeBtn) {
+        activeBtn.classList.remove('text-slate-600', 'hover:text-slate-900');
+        activeBtn.classList.add('bg-white', 'text-slate-900', 'shadow-sm');
+      }
+
+      if (tabId === 'orders') {
+        renderOrdersList();
+      } else if (tabId === 'customers') {
+        renderCustomersList();
+      } else if (tabId === 'reports') {
+        updateReportsMetrics();
+      }
+    }
+
+    // Custom non-blocking alerts
+    function showCustomAlert(title, message, theme = 'info') {
+      const modal = document.getElementById('alert-modal');
+      const iconContainer = document.getElementById('alert-icon-container');
+      const titleElem = document.getElementById('alert-title');
+      const msgElem = document.getElementById('alert-message');
+
+      titleElem.innerText = title;
+      msgElem.innerText = message;
+
+      if (theme === 'success') {
+        iconContainer.className = "mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-4 bg-emerald-50 text-emerald-600";
+        iconContainer.innerHTML = '<i data-lucide="check-circle" class="w-6 h-6"></i>';
+      } else if (theme === 'warning') {
+        iconContainer.className = "mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-4 bg-amber-50 text-amber-600";
+        iconContainer.innerHTML = '<i data-lucide="alert-triangle" class="w-6 h-6"></i>';
+      } else {
+        iconContainer.className = "mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-4 bg-blue-50 text-blue-600";
+        iconContainer.innerHTML = '<i data-lucide="info" class="w-6 h-6"></i>';
+      }
+
+      lucide.createIcons();
+      modal.classList.remove('hidden');
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    function triggerToast(msg) {
+      const toast = document.getElementById('toast');
+      const text = document.getElementById('toast-msg');
+      text.innerText = msg;
+
+      toast.classList.remove('hidden');
+      setTimeout(() => {
+        toast.classList.remove('opacity-0', 'translate-y-2');
+      }, 50);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.classList.add('hidden'), 300);
+      }, 3000);
+    }
+
+    // Toggle Payment Method
+    function setPaymentMethod(method) {
+      selectedPaymentMethod = method;
+      const cashBtn = document.getElementById('pay-cash');
+      const transferBtn = document.getElementById('pay-transfer');
+
+      if (method === 'cash') {
+        cashBtn.className = "py-2 px-3 text-xs font-semibold rounded-xl border border-blue-600 bg-blue-50/50 text-blue-800 flex items-center justify-center space-x-1.5 transition-all";
+        transferBtn.className = "py-2 px-3 text-xs font-semibold rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 flex items-center justify-center space-x-1.5 transition-all";
+      } else {
+        transferBtn.className = "py-2 px-3 text-xs font-semibold rounded-xl border border-blue-600 bg-blue-50/50 text-blue-800 flex items-center justify-center space-x-1.5 transition-all";
+        cashBtn.className = "py-2 px-3 text-xs font-semibold rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 flex items-center justify-center space-x-1.5 transition-all";
+      }
+      updateLiveReceipt();
+    }
+
+    // Render Quick services
+    function renderModalServices() {
+      const container = document.getElementById('modal-services-container');
+      container.innerHTML = "";
+
+      SERVICES_DATABASE.forEach(srv => {
+        const item = document.createElement('div');
+        item.className = "flex items-center justify-between py-3 hover:bg-slate-50 cursor-pointer px-2 rounded-lg group transition-colors";
+        item.setAttribute('onclick', `addServiceToTicket(${srv.id})`);
+        item.innerHTML = `
+          <div>
+            <span class="block text-sm font-bold text-slate-800 group-hover:text-blue-600 transition-colors">${srv.name}</span>
+            <span class="block text-xs text-slate-400">Bảo hành: ${srv.warranty}</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <span class="text-sm font-black text-slate-900">${srv.price.toLocaleString('vi-VN')}đ</span>
+            <button class="bg-blue-50 text-blue-600 p-1.5 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-all">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+            </button>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+      lucide.createIcons();
+    }
+
+    function filterModalServices() {
+      const keyword = document.getElementById('modal-service-search').value.toLowerCase();
+      const container = document.getElementById('modal-services-container');
+      container.innerHTML = "";
+
+      const filtered = SERVICES_DATABASE.filter(s => s.name.toLowerCase().includes(keyword));
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="text-center py-6 text-sm text-slate-400 font-semibold">Không tìm thấy dịch vụ thích hợp</div>`;
+        return;
+      }
+
+      filtered.forEach(srv => {
+        const item = document.createElement('div');
+        item.className = "flex items-center justify-between py-3 hover:bg-slate-50 cursor-pointer px-2 rounded-lg group transition-colors";
+        item.setAttribute('onclick', `addServiceToTicket(${srv.id})`);
+        item.innerHTML = `
+          <div>
+            <span class="block text-sm font-bold text-slate-800 group-hover:text-blue-600 transition-colors">${srv.name}</span>
+            <span class="block text-xs text-slate-400">Bảo hành: ${srv.warranty}</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <span class="text-sm font-black text-slate-900">${srv.price.toLocaleString('vi-VN')}đ</span>
+            <button class="bg-blue-50 text-blue-600 p-1.5 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-all">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+            </button>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+      lucide.createIcons();
+    }
+
+    function addServiceToTicket(serviceId) {
+      const match = SERVICES_DATABASE.find(s => s.id === serviceId);
+      if (match) {
+        // Remove 'Hold-quote' if custom service is selected
+        currentTicketServices = currentTicketServices.filter(s => s.price !== -1);
+
+        if (currentTicketServices.some(s => s.name === match.name)) {
+          triggerToast("Dịch vụ này đã tồn tại trong danh sách");
+          closeModal('service-modal');
+          return;
+        }
+
+        currentTicketServices.push({
+          name: match.name,
+          price: match.price,
+          warranty: match.warranty
+        });
+
+        renderSelectedServicesTable();
+        calculateTotals();
+        updateLiveReceipt();
+        triggerToast(`Đã thêm: ${match.name}`);
+        closeModal('service-modal');
+      }
+    }
+
+    // Add Special Hold-Quote service (For unknown issues, pan checking)
+    function addHoldService() {
+      currentTicketServices = []; // Clear other services since this is diagnostic hold
+      currentTicketServices.push({
+        name: "Nhận máy kiểm tra & Báo giá sau",
+        price: -1, // -1 signals wait for diagnostic
+        warranty: "Chờ báo giá"
+      });
+      renderSelectedServicesTable();
+      calculateTotals();
+      updateLiveReceipt();
+      triggerToast("Đã chọn chế độ Nhận kiểm tra & Báo sau");
+    }
+
+    function addCustomService() {
+      const name = document.getElementById('custom-service-name').value.trim();
+      const priceVal = document.getElementById('custom-service-price').value;
+
+      if (!name || !priceVal) {
+        showCustomAlert("Lỗi thông tin", "Vui lòng nhập đầy đủ tên dịch vụ và giá chi phí sửa chữa.", "warning");
+        return;
+      }
+
+      currentTicketServices = currentTicketServices.filter(s => s.price !== -1);
+
+      currentTicketServices.push({
+        name: name,
+        price: parseInt(priceVal),
+        warranty: "Theo thỏa thuận"
+      });
+
+      renderSelectedServicesTable();
+      calculateTotals();
+      updateLiveReceipt();
+
+      document.getElementById('custom-service-name').value = "";
+      document.getElementById('custom-service-price').value = "";
+
+      triggerToast(`Đã thêm: ${name}`);
+      closeModal('service-modal');
+    }
+
+    function renderSelectedServicesTable() {
+      const tbody = document.getElementById('selected-services-list');
+      tbody.innerHTML = "";
+
+      if (currentTicketServices.length === 0) {
+        tbody.innerHTML = `
+          <tr id="empty-service-row">
+            <td colspan="4" class="py-8 text-center text-slate-400 font-medium">Chưa chọn dịch vụ nào. Hãy chọn "Nhận kiểm tra & Báo sau" hoặc "Thêm nhanh dịch vụ (F9)"</td>
+          </tr>
+        `;
+        return;
+      }
+
+      currentTicketServices.forEach((s, idx) => {
+        const displayPrice = s.price === -1 ? "Kiểm tra báo sau" : `${s.price.toLocaleString('vi-VN')}đ`;
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50/50 transition-colors";
+        tr.innerHTML = `
+          <td class="py-3 font-bold text-slate-800">${s.name}</td>
+          <td class="py-3 text-right font-semibold text-slate-900">${displayPrice}</td>
+          <td class="py-3 text-right font-medium text-slate-500">${s.warranty}</td>
+          <td class="py-3 text-center">
+            <button onclick="removeServiceFromTicket(${idx})" class="text-rose-500 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-colors">
+              <i data-lucide="trash" class="w-4 h-4"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      lucide.createIcons();
+    }
+
+    function removeServiceFromTicket(index) {
+      currentTicketServices.splice(index, 1);
+      renderSelectedServicesTable();
+      calculateTotals();
+      updateLiveReceipt();
+    }
+
+    // State totals calculation
+    let subtotalValue = 0;
+    let finalTotalValue = 0;
+    let calculatedDiscountValue = 0;
+    let isHoldQuoteTicket = false;
+
+    function calculateTotals() {
+      isHoldQuoteTicket = currentTicketServices.some(s => s.price === -1);
+      
+      if (isHoldQuoteTicket) {
+        subtotalValue = 0;
+        calculatedDiscountValue = 0;
+        finalTotalValue = -1; // -1 represents hold/unknown quote
+      } else {
+        subtotalValue = currentTicketServices.reduce((sum, s) => sum + s.price, 0);
+        calculatedDiscountValue = discountCash;
+        if (discountPercent > 0) {
+          calculatedDiscountValue = Math.round(subtotalValue * (discountPercent / 100));
+        }
+        finalTotalValue = Math.max(0, subtotalValue - calculatedDiscountValue - promoAmount);
+      }
+    }
+
+    // Live update dynamic Receipt Preview
+    function updateLiveReceipt() {
+      calculateTotals();
+
+      // Basic customer/device elements
+      const phoneInput = document.getElementById('cust-phone').value.trim();
+      const nameInput = document.getElementById('cust-name').value.trim();
+      const addressInput = document.getElementById('cust-address').value.trim();
+      const devModelInput = document.getElementById('dev-model').value.trim();
+      const devImeiInput = document.getElementById('dev-imei').value.trim();
+      const devFaultInput = document.getElementById('dev-fault').value.trim();
+      const devPassInput = document.getElementById('dev-passcode').value.trim();
+      const devNotesInput = document.getElementById('dev-notes').value.trim();
+      const devDeadlineInput = document.getElementById('dev-deadline').value;
+
+      document.getElementById('rec-cust').innerText = nameInput ? nameInput : "Chưa có tên";
+      document.getElementById('rec-phone').innerText = phoneInput ? phoneInput : "Chưa có SĐT";
+      document.getElementById('rec-address').innerText = addressInput ? addressInput : "--";
+      
+      const today = new Date();
+      document.getElementById('rec-created').innerText = today.toLocaleDateString('vi-VN') + " " + today.toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
+
+      // Live update the handwritten-style note block
+      let formattedNoteText = "";
+      if (devModelInput) formattedNoteText += `Máy nhận: ${devModelInput}`;
+      if (devImeiInput) formattedNoteText += ` | IMEI: ${devImeiInput}`;
+      if (devFaultInput) formattedNoteText += `\nLỗi: ${devFaultInput}`;
+      if (devNotesInput) formattedNoteText += ` | Kèm: ${devNotesInput}`;
+      if (devPassInput) formattedNoteText += ` | Mật khẩu: ${devPassInput}`;
+      if (devDeadlineInput) {
+        const d = new Date(devDeadlineInput);
+        formattedNoteText += `\nHẹn trả: ${d.toLocaleDateString('vi-VN')} ${d.toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})}`;
+      }
+      
+      document.getElementById('rec-ghi-chu').innerText = formattedNoteText ? formattedNoteText : "Vui lòng nhập thông tin lỗi, mật khẩu máy & phụ kiện kèm theo...";
+
+      // Mapped services inside receipt table
+      const recSrvContainer = document.getElementById('rec-services');
+      recSrvContainer.innerHTML = "";
+
+      if (currentTicketServices.length === 0) {
+        recSrvContainer.innerHTML = `
+          <tr>
+            <td colspan="5" class="py-4 text-center text-slate-400 italic">Chưa chọn sản phẩm/dịch vụ sửa chữa</td>
+          </tr>
+        `;
+      } else {
+        currentTicketServices.forEach((s, idx) => {
+          const displayPriceStr = s.price === -1 ? "Kiểm tra báo sau" : `${s.price.toLocaleString('vi-VN')}đ`;
+          const displayAmountStr = s.price === -1 ? "Chờ báo giá" : `${s.price.toLocaleString('vi-VN')}đ`;
+
+          const row = document.createElement('tr');
+          row.className = "text-slate-800";
+          row.innerHTML = `
+            <td class="text-center font-bold" style="border-right: 1px solid #7a7676; border-bottom: 1px solid #7a7676;">${idx + 1}</td>
+            <td style="border-right: 1px solid #7a7676; border-bottom: 1px solid #7a7676;">
+              <span class="font-bold">${s.name}</span><br>
+              <span class="text-[10px] text-slate-500">BH: ${s.warranty}</span>
+            </td>
+            <td class="text-center font-bold" style="border-right: 1px solid #7a7676; border-bottom: 1px solid #7a7676;">1</td>
+            <td class="text-right font-semibold" style="border-right: 1px solid #7a7676; border-bottom: 1px solid #7a7676;">${displayPriceStr}</td>
+            <td class="text-right font-bold" style="border-right: 1px solid #7a7676; border-bottom: 1px solid #7a7676;">${displayAmountStr}</td>
+          `;
+          recSrvContainer.appendChild(row);
+        });
+      }
+
+      // Cost totals
+      if (isHoldQuoteTicket) {
+        document.getElementById('rec-total').innerText = "CHỜ BÁO GIÁ SAU";
+        document.getElementById('rec-total').className = "text-base text-amber-600 font-black animate-pulse";
+      } else {
+        document.getElementById('rec-total').innerText = finalTotalValue.toLocaleString('vi-VN') + " đ";
+        document.getElementById('rec-total').className = "text-base text-blue-600 font-black";
+      }
+
+      // VietQR Generation (Hidden for Diagnostic Wait ticket)
+      const qrBox = document.getElementById('rec-qrcode-box');
+      const qrImg = document.getElementById('rec-qrcode-img');
+
+      if (selectedPaymentMethod === 'transfer' && finalTotalValue > 0 && !isHoldQuoteTicket) {
+        const cleanedName = encodeURIComponent(nameInput || "Khach Le");
+        const bankId = "mbbank";
+        const accountNumber = "0907226236";
+        const qrUrl = `https://img.vietqr.io/image/${bankId}-${accountNumber}-compact2.png?amount=${finalTotalValue}&addInfo=HUNG%20PHONG%20${cleanedName}&accountName=HUNG%20PHONG%20MOBILE`;
+        
+        qrImg.src = qrUrl;
+        qrBox.classList.remove('hidden');
+      } else {
+        qrBox.classList.add('hidden');
+      }
+    }
+
+    // Discount trigger
+    function applyDiscount() {
+      if (isHoldQuoteTicket) {
+        showCustomAlert("Lưu ý", "Máy đang ở chế độ chờ báo giá sau, không cần áp dụng chiết khấu lúc này.", "warning");
+        return;
+      }
+      const pct = parseFloat(document.getElementById('discount-percent').value) || 0;
+      const cash = parseFloat(document.getElementById('discount-cash').value) || 0;
+
+      if (pct > 0 && cash > 0) {
+        showCustomAlert("Lỗi lựa chọn", "Chỉ chọn chiết khấu theo % HOẶC theo Số tiền mặt cụ thể.", "warning");
+        return;
+      }
+
+      discountPercent = pct;
+      discountCash = cash;
+
+      updateLiveReceipt();
+      closeModal('discount-modal');
+      triggerToast("Đã cập nhật chiết khấu đơn");
+    }
+
+    // Promo triggers
+    function applyPromo() {
+      if (isHoldQuoteTicket) {
+        showCustomAlert("Lưu ý", "Máy đang ở chế độ chờ báo giá sau, không thể áp dụng khuyến mại lúc này.", "warning");
+        return;
+      }
+      const code = document.getElementById('promo-code-input').value.trim().toUpperCase();
+      validateAndApplyPromo(code);
+    }
+
+    function selectQuickPromo(code) {
+      if (isHoldQuoteTicket) {
+        showCustomAlert("Lưu ý", "Máy đang ở chế độ chờ báo giá sau, không thể áp dụng khuyến mại lúc này.", "warning");
+        return;
+      }
+      validateAndApplyPromo(code);
+    }
+
+    function validateAndApplyPromo(code) {
+      if (!code) {
+        promoAmount = 0;
+        selectedPromoCode = "";
+        updateLiveReceipt();
+        closeModal('promo-modal');
+        return;
+      }
+
+      if (code === "TRIAN10") {
+        promoAmount = Math.round(subtotalValue * 0.1);
+        selectedPromoCode = "TRIAN10";
+        triggerToast("Voucher TRIAN10 (-10%) thành công");
+      } else if (code === "KHACHQUEN50K") {
+        promoAmount = 50000;
+        selectedPromoCode = "KHACHQUEN50K";
+        triggerToast("Voucher KHACHQUEN50K (-50k) thành công");
+      } else {
+        showCustomAlert("Mã không tồn tại", "Mã chương trình khuyến mại này chưa có hiệu lực hoặc đã hết hạn.", "warning");
+        return;
+      }
+
+      updateLiveReceipt();
+      closeModal('promo-modal');
+    }
+
+    // Reset Form
+    function clearForm() {
+      document.getElementById('cust-phone').value = "";
+      document.getElementById('cust-name').value = "";
+      document.getElementById('cust-address').value = "";
+      document.getElementById('dev-model').value = "";
+      document.getElementById('dev-imei').value = "";
+      document.getElementById('dev-fault').value = "";
+      document.getElementById('dev-notes').value = "";
+      document.getElementById('dev-passcode').value = "";
+      document.getElementById('dev-deadline').value = "";
+
+      currentTicketServices = [];
+      discountPercent = 0;
+      discountCash = 0;
+      promoAmount = 0;
+      selectedPromoCode = "";
+      selectedPaymentMethod = "cash";
+
+      setPaymentMethod('cash');
+      renderSelectedServicesTable();
+      updateLiveReceipt();
+      triggerToast("Đã dọn sạch quầy tiếp nhận");
+    }
+
+    function triggerF9() {
+      openModal('service-modal');
+      document.getElementById('modal-service-search').focus();
+    }
+
+    function triggerF6() {
+      openModal('discount-modal');
+      document.getElementById('discount-percent').focus();
+    }
+
+    function triggerF8() {
+      openModal('promo-modal');
+      document.getElementById('promo-code-input').focus();
+    }
+
+    function focusCustomerName() {
+      document.getElementById('cust-name').focus();
+      triggerToast("Nhập tên khách hàng");
+    }
+
+    // Save & print receipt flow
+    function saveAndPrintOrder() {
+      const phone = document.getElementById('cust-phone').value.trim();
+      const name = document.getElementById('cust-name').value.trim();
+      const model = document.getElementById('dev-model').value.trim();
+      const fault = document.getElementById('dev-fault').value.trim();
+      const passcode = document.getElementById('dev-passcode').value.trim();
+      const notes = document.getElementById('dev-notes').value.trim();
+
+      if (!phone || !name || !model || !fault) {
+        showCustomAlert("Còn thiếu thông tin", "Yêu cầu bắt buộc để tạo hóa đơn: Số điện thoại, Tên khách hàng, Model máy và Tình trạng lỗi của máy.", "warning");
+        return;
+      }
+
+      if (currentTicketServices.length === 0) {
+        showCustomAlert("Chưa có dịch vụ", "Vui lòng chọn ít nhất một dịch vụ sửa chữa hoặc nhấn 'Nhận máy kiểm tra & Báo sau'.", "warning");
+        return;
+      }
+
+      const orderId = "HP-" + (10000 + ORDERS.length + 5);
+      const deadlineVal = document.getElementById('dev-deadline').value;
+      const formattedDeadline = deadlineVal ? new Date(deadlineVal).toLocaleString('vi-VN') : "Thỏa thuận sau";
+      const rightNow = new Date().toLocaleString('vi-VN');
+
+      // Build & Push Order
+      const newOrder = {
+        id: orderId,
+        customer: {
+          name: name,
+          phone: phone,
+          address: document.getElementById('cust-address').value.trim() || "Rạch Giá"
+        },
+        device: {
+          model: model,
+          imei: document.getElementById('dev-imei').value.trim() || "Chưa cung cấp",
+          fault: fault,
+          passcode: passcode || "Không cài",
+          notes: notes || "Không kèm phụ kiện",
+          deadline: deadlineVal || "Thỏa thuận"
+        },
+        services: [...currentTicketServices],
+        subtotal: subtotalValue,
+        discount: calculatedDiscountValue,
+        promo: promoAmount,
+        total: finalTotalValue,
+        paymentMethod: selectedPaymentMethod,
+        status: isHoldQuoteTicket ? "Đang kiểm tra / Chờ báo giá" : "Mới nhận",
+        createdAt: new Date().toISOString()
+      };
+
+      ORDERS.unshift(newOrder);
+
+      // Map details to actual printed template matching the user's layout
+      document.getElementById('p-order-id').innerText = orderId;
+      document.getElementById('p-cust-name').innerText = name;
+      document.getElementById('p-p-cust-phone').innerText = phone;
+      document.getElementById('p-cust-address').innerText = newOrder.customer.address;
+      document.getElementById('p-created-on').innerText = rightNow;
+
+      // Handwritten style note line on printout
+      let finalNoteLine = `Model máy: ${model} | IMEI: ${newOrder.device.imei} | Lỗi máy: ${fault}`;
+      if (passcode) finalNoteLine += ` | Mật khẩu khóa: ${passcode}`;
+      if (notes) finalNoteLine += ` | Phụ kiện: ${notes}`;
+      if (deadlineVal) finalNoteLine += ` | Hẹn giao: ${formattedDeadline}`;
+      document.getElementById('p-ghi-chu-text').innerText = finalNoteLine;
+
+      // Populate services print list in print table style
+      const pSrvList = document.getElementById('p-services-list');
+      pSrvList.innerHTML = "";
+      currentTicketServices.forEach((s, idx) => {
+        const displayPriceText = s.price === -1 ? "Báo giá sau" : `${s.price.toLocaleString('vi-VN')}đ`;
+        const displayAmountText = s.price === -1 ? "Chờ kiểm tra" : `${s.price.toLocaleString('vi-VN')}đ`;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="text-align: center; border-right: 1px solid #7a7676; border-bottom: 1px solid #7a7676; font-weight: bold;">${idx + 1}</td>
+          <td style="border-right: 1px solid #7a7676; border-bottom: 1px solid #7a7676; padding: 6px;">
+            <strong style="font-size: 13px;">${s.name}</strong><br>
+            <span style="font-size: 10px; color: #555;">Bảo hành: ${s.warranty}</span>
+          </td>
+          <td style="text-align: center; border-right: 1px solid #7a7676; border-bottom: 1px solid #7a7676; font-weight: bold;">1</td>
+          <td style="text-align: right; border-right: 1px solid #7a7676; border-bottom: 1px solid #7a7676; font-weight: bold; padding: 6px;">${displayPriceText}</td>
+          <td style="text-align: right; border-right: 1px solid #7a7676; border-bottom: 1px solid #7a7676; font-weight: bold; padding: 6px;">${displayAmountText}</td>
+        `;
+        pSrvList.appendChild(tr);
+      });
+
+      // Handle Printed Total label
+      if (isHoldQuoteTicket) {
+        document.getElementById('p-total-label').innerText = "Trạng thái thanh toán:";
+        document.getElementById('p-total-container').innerHTML = "<span id='p-total' style='font-size:14px;color:#d97706;font-weight:900;'>CHỜ BÁO GIÁ SAU QUA ĐT</span>";
+      } else {
+        document.getElementById('p-total-label').innerText = "Khách hàng thanh toán:";
+        document.getElementById('p-total-container').innerHTML = `<span id="p-total">${finalTotalValue.toLocaleString('vi-VN')}</span> đ`;
+      }
+
+      // Setup QR Code on Real printout if bank transfer selected
+      const pQrBox = document.getElementById('p-qr-box');
+      const pQrImg = document.getElementById('p-qr-img');
+      if (selectedPaymentMethod === 'transfer' && finalTotalValue > 0 && !isHoldQuoteTicket) {
+        const cleanedName = encodeURIComponent(name);
+        pQrImg.src = `https://img.vietqr.io/image/mbbank-0907226236-compact2.png?amount=${finalTotalValue}&addInfo=HUNG%20PHONG%20${cleanedName}&accountName=HUNG%20PHONG%20MOBILE`;
+        pQrBox.style.display = 'block';
+      } else {
+        pQrBox.style.display = 'none';
+      }
+
+      showCustomAlert("Hùng Phong Mobile", `Đã tiếp nhận biên nhận ${orderId} thành công (Chế độ chờ báo giá sau). Đang truyền lệnh đến máy in A5...`, "success");
+
+      setTimeout(() => {
+        window.print();
+        clearForm();
+      }, 1500);
+    }
+
+    // List of tab: ORDERS
+    let activeFilterStatus = "all";
+    function renderOrdersList() {
+      const tbody = document.getElementById('orders-table-body');
+      tbody.innerHTML = "";
+
+      let filtered = ORDERS;
+      if (activeFilterStatus !== "all") {
+        filtered = ORDERS.filter(o => o.status === activeFilterStatus);
+      }
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="py-12 text-center text-slate-400 font-semibold">Không tìm thấy hóa đơn nào thuộc trạng thái này.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      filtered.forEach(o => {
+        const dateStr = new Date(o.createdAt).toLocaleDateString('vi-VN') + " " + new Date(o.createdAt).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
+        
+        let statusBadge = "";
+        if (o.status === 'Mới nhận') {
+          statusBadge = `<span class="bg-slate-100 text-slate-700 font-bold px-2.5 py-1 rounded-full text-[10px] uppercase">Mới nhận</span>`;
+        } else if (o.status === 'Đang kiểm tra / Chờ báo giá') {
+          statusBadge = `<span class="bg-orange-100 text-orange-800 font-bold px-2.5 py-1 rounded-full text-[10px] uppercase animate-pulse">Chờ báo giá</span>`;
+        } else if (o.status === 'Đang sửa') {
+          statusBadge = `<span class="bg-amber-100 text-amber-800 font-bold px-2.5 py-1 rounded-full text-[10px] uppercase">Đang sửa</span>`;
+        } else if (o.status === 'Đã sửa xong') {
+          statusBadge = `<span class="bg-green-100 text-green-800 font-bold px-2.5 py-1 rounded-full text-[10px] uppercase">Đã xong</span>`;
+        } else {
+          statusBadge = `<span class="bg-blue-100 text-blue-800 font-bold px-2.5 py-1 rounded-full text-[10px] uppercase">Đã giao</span>`;
+        }
+
+        const displayTotalStr = o.total === -1 ? `<span class="text-amber-600 font-bold text-xs italic">Chờ báo giá</span>` : `${o.total.toLocaleString('vi-VN')}đ`;
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50/50 transition-colors";
+        tr.innerHTML = `
+          <td class="py-4 px-4 font-black text-blue-600">${o.id}</td>
+          <td class="py-4 px-4">
+            <span class="block font-bold text-slate-800">${o.customer.name}</span>
+            <span class="block text-xs text-slate-400 font-medium">${o.customer.phone}</span>
+          </td>
+          <td class="py-4 px-4">
+            <span class="block font-bold text-slate-700">${o.device.model}</span>
+            <span class="block text-xs text-slate-400 font-medium">${o.device.imei}</span>
+          </td>
+          <td class="py-4 px-4 text-xs font-semibold text-slate-500">${dateStr}</td>
+          <td class="py-4 px-4 text-xs text-slate-600 max-w-xs truncate font-medium">
+            ${o.services.map(s => s.name).join(', ')}
+          </td>
+          <td class="py-4 px-4 text-right font-black text-slate-900">${displayTotalStr}</td>
+          <td class="py-4 px-4 text-center">${statusBadge}</td>
+          <td class="py-4 px-4 text-center">
+            <div class="flex items-center justify-center space-x-1.5">
+              <button onclick="triggerStatusUpdate('${o.id}')" title="Cập nhật trạng thái" class="bg-blue-50 hover:bg-blue-100 text-blue-600 p-2 rounded-xl transition-colors">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+              </button>
+              <button onclick="reprintOrderDirect('${o.id}')" title="In lại hóa đơn" class="bg-slate-100 hover:bg-slate-200 text-slate-600 p-2 rounded-xl transition-colors">
+                <i data-lucide="printer" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      lucide.createIcons();
+    }
+
+    function filterStatus(status) {
+      activeFilterStatus = status;
+      
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.className = "filter-btn px-4 py-2 text-xs font-bold rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all";
+      });
+
+      const ids = {
+        all: 'btn-filter-all',
+        'Mới nhận': 'btn-filter-received',
+        'Đang kiểm tra / Chờ báo giá': 'btn-filter-pending-quote',
+        'Đang sửa': 'btn-filter-fixing',
+        'Đã sửa xong': 'btn-filter-done',
+        'Đã giao': 'btn-filter-delivered'
+      };
+
+      document.getElementById(ids[status]).className = "filter-btn px-4 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white shadow-md shadow-blue-500/15 transition-all";
+      renderOrdersList();
+    }
+
+    function filterOrdersTable() {
+      const q = document.getElementById('order-search-input').value.toLowerCase();
+      const tbody = document.getElementById('orders-table-body');
+      const rows = tbody.getElementsByTagName('tr');
+
+      for (let i = 0; i < rows.length; i++) {
+        const text = rows[i].textContent.toLowerCase();
+        if (text.includes(q)) {
+          rows[i].classList.remove('hidden');
+        } else {
+          rows[i].classList.add('hidden');
+        }
+      }
+    }
+
+    function reprintOrderDirect(orderId) {
+      const order = ORDERS.find(o => o.id === orderId);
+      if (!order) return;
+
+      document.getElementById('p-order-id').innerText = order.id;
+      document.getElementById('p-cust-name').innerText = order.customer.name;
+      document.getElementById('p-p-cust-phone').innerText = order.customer.phone;
+      document.getElementById('p-cust-address').innerText = order.customer.address;
+      document.getElementById('p-created-on').innerText = new Date(order.createdAt).toLocaleString('vi-VN');
+
+      let printNotes = `Model máy: ${order.device.model} | IMEI: ${order.device.imei} | Lỗi: ${order.device.fault}`;
+      if (order.device.passcode) printNotes += ` | Mật khẩu: ${order.device.passcode}`;
+      if (order.device.notes) printNotes += ` | Phụ kiện: ${order.device.notes}`;
+      if (order.device.deadline) printNotes += ` | Hẹn giao: ${new Date(order.device.deadline).toLocaleString('vi-VN')}`;
+      document.getElementById('p-ghi-chu-text').innerText = printNotes;
+
+      const pSrvList = document.getElementById('p-services-list');
+      pSrvList.innerHTML = "";
+      
+      const hasHoldService = order.services.some(s => s.price === -1);
+
+      order.services.forEach((s, idx) => {
+        const displayPriceText = s.price === -1 ? "Báo giá sau" : `${s.price.toLocaleString('vi-VN')}đ`;
+        const displayAmountText = s.price === -1 ? "Chờ kiểm tra" : `${s.price.toLocaleString('vi-VN')}đ`;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="text-align: center; border-right: 1px solid #7a7676; border-bottom: 1px solid #7a7676; font-weight: bold;">${idx + 1}</td>
+          <td style="border-right: 1px solid #7a7676; border-bottom: 1px solid #7a7676; padding: 6px;">
+            <strong style="font-size: 13px;">${s.name}</strong><br>
+            <span style="font-size: 10px; color: #555;">Bảo hành: ${s.warranty}</span>
+          </td>
+          <td style="text-align: center; border-right: 1px solid #7a7676; border-bottom: 1px solid #7a7676; font-weight: bold;">1</td>
+          <td style="text-align: right; border-right: 1px solid #7a7676; border-bottom: 1px solid #7a7676; font-weight: bold; padding: 6px;">${displayPriceText}</td>
+          <td style="text-align: right; border-right: 1px solid #7a7676; border-bottom: 1px solid #7a7676; font-weight: bold; padding: 6px;">${displayAmountText}</td>
+        `;
+        pSrvList.appendChild(tr);
+      });
+
+      if (hasHoldService) {
+        document.getElementById('p-total-label').innerText = "Trạng thái thanh toán:";
+        document.getElementById('p-total-container').innerHTML = "<span id='p-total' style='font-size:14px;color:#d97706;font-weight:900;'>CHỜ BÁO GIÁ SAU QUA ĐT</span>";
+      } else {
+        document.getElementById('p-total-label').innerText = "Khách hàng thanh toán:";
+        document.getElementById('p-total-container').innerHTML = `<span id="p-total">${order.total.toLocaleString('vi-VN')}</span> đ`;
+      }
+
+      const pQrBox = document.getElementById('p-qr-box');
+      const pQrImg = document.getElementById('p-qr-img');
+      if (order.paymentMethod === 'transfer' && order.total > 0 && !hasHoldService) {
+        const cleanedName = encodeURIComponent(order.customer.name);
+        pQrImg.src = `https://img.vietqr.io/image/mbbank-0907226236-compact2.png?amount=${order.total}&addInfo=HUNG%20PHONG%20${cleanedName}&accountName=HUNG%20PHONG%20MOBILE`;
+        pQrBox.style.display = 'block';
+      } else {
+        pQrBox.style.display = 'none';
+      }
+
+      window.print();
+    }
+
+    function triggerStatusUpdate(orderId) {
+      document.getElementById('status-target-order-id').value = orderId;
+      
+      const order = ORDERS.find(o => o.id === orderId);
+      const priceBox = document.getElementById('status-price-update-box');
+      
+      // If the order has "Nhận kiểm tra & báo sau", show price update panel
+      if (order && order.services.some(s => s.price === -1)) {
+        priceBox.classList.remove('hidden');
+        document.getElementById('status-new-price').value = "";
+      } else {
+        priceBox.classList.add('hidden');
+      }
+
+      openModal('status-modal');
+    }
+
+    function updateOrderStatus(newStatus) {
+      const id = document.getElementById('status-target-order-id').value;
+      const order = ORDERS.find(o => o.id === id);
+      if (order) {
+        const hasHoldService = order.services.some(s => s.price === -1);
+        
+        // If price is updated
+        if (hasHoldService) {
+          const newPriceInput = document.getElementById('status-new-price').value;
+          if (newPriceInput && parseInt(newPriceInput) >= 0) {
+            const parsedPrice = parseInt(newPriceInput);
+            // Replace diagnostic item with real service fee item
+            order.services = [{
+              name: "Sửa chữa khắc phục lỗi nguồn / IC",
+              price: parsedPrice,
+              warranty: "3 Tháng"
+            }];
+            order.subtotal = parsedPrice;
+            order.total = parsedPrice;
+            triggerToast(`Đã cập nhật báo giá thành công: ${parsedPrice.toLocaleString('vi-VN')}đ`);
+          }
+        }
+
+        order.status = newStatus;
+        triggerToast(`Đã đổi trạng thái đơn ${id} thành: ${newStatus}`);
+        closeModal('status-modal');
+        renderOrdersList();
+      }
+    }
+
+    // Customers view tab
+    function renderCustomersList() {
+      const grid = document.getElementById('customers-list-grid');
+      grid.innerHTML = "";
+
+      const uniqueCusts = {};
+      ORDERS.forEach(o => {
+        if (!uniqueCusts[o.customer.phone]) {
+          uniqueCusts[o.customer.phone] = {
+            name: o.customer.name,
+            phone: o.customer.phone,
+            address: o.customer.address,
+            count: 1,
+            totalSpend: o.total === -1 ? 0 : o.total
+          };
+        } else {
+          uniqueCusts[o.customer.phone].count++;
+          if (o.total !== -1) {
+            uniqueCusts[o.customer.phone].totalSpend += o.total;
+          }
+        }
+      });
+
+      const list = Object.values(uniqueCusts);
+
+      list.forEach(c => {
+        const card = document.createElement('div');
+        card.className = "bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow cursor-pointer";
+        card.setAttribute('onclick', `selectCustomerFromList('${c.phone}', '${c.name}', '${c.address}')`);
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="bg-blue-50 text-blue-800 text-[10px] font-extrabold py-1 px-2 rounded-lg">Khách Hàng Thân Thiết</span>
+              <span class="text-xs text-slate-400 font-bold">${c.count} lượt sửa chữa</span>
+            </div>
+            <h4 class="font-extrabold text-slate-800 text-base">${c.name}</h4>
+            <p class="text-sm text-slate-500 font-semibold mt-1 flex items-center">
+              <i data-lucide="phone" class="w-3.5 h-3.5 mr-1.5 text-slate-400"></i>
+              <span>${c.phone}</span>
+            </p>
+            <p class="text-xs text-slate-400 font-semibold mt-1 flex items-center">
+              <i data-lucide="map-pin" class="w-3.5 h-3.5 mr-1.5 text-slate-400"></i>
+              <span>${c.address}</span>
+            </p>
+          </div>
+          <div class="border-t border-slate-100 pt-3 mt-4 flex justify-between items-center text-xs">
+            <span class="text-slate-400 font-bold">Tổng doanh thu:</span>
+            <span class="font-black text-slate-900">${c.totalSpend.toLocaleString('vi-VN')}đ</span>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+      lucide.createIcons();
+    }
+
+    function selectCustomerFromList(phone, name, address) {
+      document.getElementById('cust-phone').value = phone;
+      document.getElementById('cust-name').value = name;
+      document.getElementById('cust-address').value = address;
+      
+      switchTab('reception');
+      updateLiveReceipt();
+      triggerToast(`Đã tải thông tin khách hàng: ${name}`);
+    }
+
+    function filterCustomers() {
+      const q = document.getElementById('cust-search-input').value.toLowerCase();
+      const grid = document.getElementById('customers-list-grid');
+      const cards = grid.children;
+
+      for (let i = 0; i < cards.length; i++) {
+        const text = cards[i].textContent.toLowerCase();
+        if (text.includes(q)) {
+          cards[i].classList.remove('hidden');
+        } else {
+          cards[i].classList.add('hidden');
+        }
+      }
+    }
+
+    function openCustomerSearch() {
+      switchTab('customers');
+      triggerToast("Bạn có thể tìm kiếm khách hàng cũ tại đây");
+    }
+
+    function updateReportsMetrics() {
+      const totalRevenue = ORDERS.filter(o => o.status === 'Đã giao' && o.total !== -1).reduce((sum, o) => sum + o.total, 0);
+      const fixing = ORDERS.filter(o => o.status === 'Đang sửa' || o.status === 'Đang kiểm tra / Chờ báo giá').length;
+      const done = ORDERS.filter(o => o.status === 'Đã sửa xong').length;
+      const delivered = ORDERS.filter(o => o.status === 'Đã giao').length;
+
+      document.getElementById('report-revenue').innerText = totalRevenue.toLocaleString('vi-VN') + "đ";
+      document.getElementById('report-fixing-count').innerText = fixing + " Đơn";
+      document.getElementById('report-done-count').innerText = done + " Đơn";
+      document.getElementById('report-completed-count').innerText = delivered + " Máy";
+    }
+
+    function showGiftModal() {
+      showCustomAlert("Chương trình Đổi Quà", "Chức năng tích điểm đổi quà hiện chưa được kích hoạt cho chiến dịch này.", "info");
+    }
+
+    function showSettings() {
+      showCustomAlert("Thiết lập hệ thống", "Dùng để thiết lập kết nối máy in nhiệt Bluetooth/USB, cấu hình API Ngân hàng và phân quyền thợ kỹ thuật.", "info");
+    }
+
+    function showChangePrice() {
+      showCustomAlert("Đổi giá bán", "Hãy nhấn Thêm nhanh dịch vụ (F9) -> nhập Tên dịch vụ & Giá bán khác bên ngoài danh mục tự do.", "info");
+    }
+
+    function showAllActions() {
+      showCustomAlert("Tất cả thao tác", "Hệ thống hỗ trợ phím tắt tiện ích:\n- F9: Thêm nhanh dịch vụ\n- F6: Thiết lập chiết khấu\n- F8: Áp dụng khuyến mại\n- F11: Làm mới dọn sạch quầy", "info");
+    }
+  </script>
+</body>
+</html>
